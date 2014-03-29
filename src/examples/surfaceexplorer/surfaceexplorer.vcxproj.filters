@@ -23,5 +23,8 @@
     <ClInclude Include="surfaceexplorer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="nodeselector.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

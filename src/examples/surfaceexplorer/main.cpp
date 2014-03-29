@@ -9,6 +9,7 @@
 
 #include "../../octet.h"
 
+#include "nodeselector.h"
 #include "surfaceexplorer.h"
 
 /// Create a box with octet
