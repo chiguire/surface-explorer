@@ -17,6 +17,8 @@ namespace octet {
     int  mouse_x, mouse_y;
     int prev_x, prev_y;
 
+    node_selector nodeSelector;
+
   public:
     /// this is called when we construct the class before everything is initialised.
     surfaceexplorer(int argc, char **argv)
@@ -24,6 +26,7 @@ namespace octet {
     , camera_position(0.0f, 0.0f, 10.0f, 0.0f)
     , camera_rotation(45.0f, 0.0f, 0.0f)
     , cameraToWorld(1.0f)
+    , nodeSelector()
     { }
 
     /// this is called once OpenGL is initialized
@@ -31,11 +34,21 @@ namespace octet {
       app_scene =  new visual_scene();
       app_scene->create_default_camera_and_lights();
 
+      nodeSelector.init(5, 5, 10.0f, 10.0f);
+      app_scene->add_child(&nodeSelector);
+
+      dynarray<ref<mesh_instance>> *nodeMeshInstances = nodeSelector.getMeshInstances();
+
+      for (auto i = nodeMeshInstances->begin(); i != nodeMeshInstances->end(); i++) {
+        app_scene->add_mesh_instance(*i);
+      }
+      /*
       material *red = new material(vec4(0.4f, 1.0f, 0, 1));
       mesh_box *box = new mesh_box(vec3(1));
       scene_node *node = new scene_node();
       app_scene->add_child(node);
       app_scene->add_mesh_instance(new mesh_instance(node, box, red));
+      */
     }
 
     /// this is called to draw the world
@@ -59,42 +72,47 @@ namespace octet {
     {
       get_mouse_pos(mouse_x, mouse_y);
 
-      bool is_mouse_down = is_key_down(key_lmb) && is_key_down(key_alt);
-      if (!is_mouse_down) return;
+      bool isLeftClick = is_key_down(key_lmb);
+      bool isAltPressed = is_key_down(key_alt);
 
-      if (prev_x < mouse_x)
-      {
-        camera_rotation[1] -= 4.0f;
-        prev_x = mouse_x;
+      if (isLeftClick && !isAltPressed) {
+        //Detect if cube is clicked
+      } else if (isLeftClick && isAltPressed) {
 
-        if (camera_rotation[1] < 0.0f)
-          camera_rotation[1] += 360.0f;
+        if (prev_x < mouse_x)
+        {
+          camera_rotation[1] -= 4.0f;
+          prev_x = mouse_x;
 
-      }
-      else if (prev_x > mouse_x)
-      {
-        camera_rotation[1] += 4.0f;
-        prev_x = mouse_x;
+          if (camera_rotation[1] < 0.0f)
+            camera_rotation[1] += 360.0f;
 
-        if (camera_rotation[1] >= 360.0f)
-          camera_rotation[1] -= 360.0f;
-      }
+        }
+        else if (prev_x > mouse_x)
+        {
+          camera_rotation[1] += 4.0f;
+          prev_x = mouse_x;
 
-      if (prev_y < mouse_y)
-      {
-        camera_rotation[0] += 4.0f;
-        prev_y = mouse_y;
+          if (camera_rotation[1] >= 360.0f)
+            camera_rotation[1] -= 360.0f;
+        }
 
-        if (camera_rotation[0] > 90.0f)
-          camera_rotation[0] = 90.0f;
-      }
-      else if (prev_y > mouse_y)
-      {
-        camera_rotation[0] -= 4.0f;
-        prev_y = mouse_y;
+        if (prev_y < mouse_y)
+        {
+          camera_rotation[0] += 4.0f;
+          prev_y = mouse_y;
 
-        if (camera_rotation[0] < -90.0f)
-          camera_rotation[0] = -90.0f;
+          if (camera_rotation[0] > 90.0f)
+            camera_rotation[0] = 90.0f;
+        }
+        else if (prev_y > mouse_y)
+        {
+          camera_rotation[0] -= 4.0f;
+          prev_y = mouse_y;
+
+          if (camera_rotation[0] < -90.0f)
+            camera_rotation[0] = -90.0f;
+        }
       }
     }
 

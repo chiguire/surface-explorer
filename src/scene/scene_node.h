@@ -31,7 +31,7 @@ namespace octet { namespace scene {
       nodeToParent.loadIdentity();
       sid = atom_;
     }
-
+    
     /// Construct a scene node with a matrix and an identifying sid atom.
     scene_node(const mat4t &nodeToParent, atom_t sid) {
       this->nodeToParent = nodeToParent;
