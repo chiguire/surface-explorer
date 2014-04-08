@@ -18,6 +18,9 @@ namespace octet {
     
     mesh_instance *meshSelected;
     ivec3 meshSelectedIndex;
+    float meshSelectedHeight;
+    float mouse_y_start;
+    mat4t nodeToParentStart;
 
     unsigned int width;
     unsigned int height;
@@ -34,6 +37,10 @@ namespace octet {
     , cubeNodes()
     , meshInstances()
     , meshSelected(NULL)
+    , meshSelectedIndex(0)
+    , meshSelectedHeight(0.0f)
+    , mouse_y_start(0.0f)
+    , nodeToParentStart(1.0f)
     , width(0)
     , height(0)
     , state(Idle)
@@ -74,7 +81,7 @@ namespace octet {
       return &meshInstances;
     }
 
-    void updateState(bool leftButtonClicked, const vec3 *origin = NULL, const vec3 *direction = NULL) {
+    void updateState(bool leftButtonClicked, float mouse_y, const vec3 *origin = NULL, const vec3 *direction = NULL) {
       if (leftButtonClicked && !isLeftButtonPrevClicked) {
         dynarray<scene_node *> candidateNodes;
         dynarray<ivec3> candidatePositions;
@@ -119,6 +126,9 @@ namespace octet {
         if (meshSelected) {
           printf("Selected node (%d, %d)\n", meshSelectedIndex[0], meshSelectedIndex[1]);
           meshSelected->set_material(green[meshSelectedIndex[1]*width+meshSelectedIndex[0]]);
+          nodeToParentStart = meshSelected->get_node()->get_nodeToParent();
+          meshSelectedHeight = (vec4(0.0f, 0.0f, 0.0f, 1.0f)*nodeToParentStart).y();
+          mouse_y_start = mouse_y;
         } else {
           printf("Not selected node\n");
         }
@@ -126,7 +136,11 @@ namespace octet {
       } else if (leftButtonClicked && isLeftButtonPrevClicked) {
         //drag if meshSelected, else do nothing
         if (meshSelected) {
-          
+          float mouse_y_diff = (mouse_y_start - mouse_y)*0.015f;
+          mat4t nodeToParentDiff = nodeToParentStart;
+          nodeToParentDiff.translate(0.0f, mouse_y_diff, 0.0f);
+          meshSelected->get_node()->access_nodeToParent() = nodeToParentDiff;
+          //printf("Drag distance: %g\n", mouse_y_diff);
         }
       } else if (!leftButtonClicked) {
         isLeftButtonPrevClicked = false;

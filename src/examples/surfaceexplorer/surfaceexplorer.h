@@ -79,9 +79,9 @@ namespace octet {
         buildRay(rayOrigin, rayDirection);
 
         //printf("Ray origin(%.2f, %.2f, %.2f), direction(%.2f, %.2f, %.2f)\n", rayOrigin.x(), rayOrigin.y(), rayOrigin.z(), rayDirection.x(), rayDirection.y(), rayDirection.z());
-        nodeSelector.updateState(true, &rayOrigin, &rayDirection);
+        nodeSelector.updateState(true, mouse_y, &rayOrigin, &rayDirection);
       } else if (!isLeftClick && !isAltPressed) {
-        nodeSelector.updateState(false);
+        nodeSelector.updateState(false, mouse_y);
       } else if (isLeftClick && isAltPressed) {
 
         if (prev_x < mouse_x)
