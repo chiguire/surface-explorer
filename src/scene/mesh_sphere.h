@@ -116,6 +116,10 @@ namespace octet { namespace scene {
       update();
     }
 
+    sphere *get_sphere() {
+      return &this->shape;
+    }
+
     /// Generate mesh from parameters.
     virtual void update() {
       int kind = 1;

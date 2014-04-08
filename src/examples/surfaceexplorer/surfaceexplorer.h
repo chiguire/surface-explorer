@@ -23,9 +23,11 @@ namespace octet {
     /// this is called when we construct the class before everything is initialised.
     surfaceexplorer(int argc, char **argv)
     : app(argc, argv)
-    , camera_position(0.0f, 0.0f, 10.0f, 0.0f)
+    , camera_position(-1.0f, 0.0f, 10.0f, 0.0f)
     , camera_rotation(45.0f, 0.0f, 0.0f)
     , cameraToWorld(1.0f)
+    , mouse_x(0), mouse_y(0)
+    , prev_x(0), prev_y(0)
     , nodeSelector()
     { }
 
@@ -34,7 +36,7 @@ namespace octet {
       app_scene =  new visual_scene();
       app_scene->create_default_camera_and_lights();
 
-      nodeSelector.init(5, 5, 10.0f, 10.0f);
+      nodeSelector.init(4, 4, 2.0f, 2.0f);
       app_scene->add_child(&nodeSelector);
 
       dynarray<ref<mesh_instance>> *nodeMeshInstances = nodeSelector.getMeshInstances();
@@ -42,13 +44,6 @@ namespace octet {
       for (auto i = nodeMeshInstances->begin(); i != nodeMeshInstances->end(); i++) {
         app_scene->add_mesh_instance(*i);
       }
-      /*
-      material *red = new material(vec4(0.4f, 1.0f, 0, 1));
-      mesh_box *box = new mesh_box(vec3(1));
-      scene_node *node = new scene_node();
-      app_scene->add_child(node);
-      app_scene->add_mesh_instance(new mesh_instance(node, box, red));
-      */
     }
 
     /// this is called to draw the world
@@ -57,8 +52,9 @@ namespace octet {
       get_viewport_size(vx, vy);
       app_scene->begin_render(vx, vy);
 
-      mouseMovement();
       setCamera();
+      keyboardInput();
+      mouseMovement();
 
       // update matrices. assume 30 fps.
       app_scene->update(1.0f/30);
@@ -77,6 +73,15 @@ namespace octet {
 
       if (isLeftClick && !isAltPressed) {
         //Detect if cube is clicked
+        vec3 rayOrigin;
+        vec3 rayDirection;
+
+        buildRay(rayOrigin, rayDirection);
+
+        //printf("Ray origin(%.2f, %.2f, %.2f), direction(%.2f, %.2f, %.2f)\n", rayOrigin.x(), rayOrigin.y(), rayOrigin.z(), rayDirection.x(), rayDirection.y(), rayDirection.z());
+        nodeSelector.updateState(true, &rayOrigin, &rayDirection);
+      } else if (!isLeftClick && !isAltPressed) {
+        nodeSelector.updateState(false);
       } else if (isLeftClick && isAltPressed) {
 
         if (prev_x < mouse_x)
@@ -116,6 +121,67 @@ namespace octet {
       }
     }
 
+    void keyboardInput() 
+    {
+      static bool justPressed = false;
+      vec4 direction(0.0f);
+      
+      if(is_key_down(key_space)){
+        this->camera_position = vec4(0.0f, 0.0f, 10.0f, 0.0f);
+        this->camera_rotation = vec3(45.0f, 0.0f, 0.0f);
+      }
+
+      if (!is_key_down(key_alt)) {
+        if (is_key_down('W')) {
+          direction[1] = -0.25f * (camera_position[2]/5.0f);
+        } else if (is_key_down('S')) {
+          direction[1] = 0.25f * (camera_position[2]/5.0f);
+        }
+
+        if (is_key_down('A')) {
+          direction[0] = -0.25f * (camera_position[2]/5.0f);
+        } else if (is_key_down('D')) {
+          direction[0] = 0.25f * (camera_position[2]/5.0f);
+        }
+
+        mat4t directionMatrix(1.0f);
+        directionMatrix.rotate(-camera_rotation[1], 0.0f, 0.0f, 1.0f);
+        direction = direction * directionMatrix;
+
+        camera_position[0] += direction[0];
+        camera_position[1] += direction[1];
+
+        if (is_key_down('Q')) {
+          camera_position[2] -= 0.25f;
+          if (camera_position[2] < 0.5f) camera_position[2] = 0.5f;
+        } else if (is_key_down('E')) {
+          camera_position[2] += 0.25f;
+        }
+
+        if (is_key_down('R')) {
+          camera_position[3] += 0.25f * (camera_position[2]/5.0f);
+        } else if (is_key_down('Y')) {
+          camera_position[3] -= 0.25f * (camera_position[2]/5.0f);
+        }
+      } else {
+        if (is_key_down('A')) {
+          camera_rotation[1] += 5.0f;
+          if (camera_rotation[1] >= 360.0f) camera_rotation[1] -= 360.0f;
+        } else if (is_key_down('D')) {
+          camera_rotation[1] -= 5.0f;
+          if (camera_rotation[1] < 0.0f) camera_rotation[1] += 360.0f;
+        }
+
+        if (is_key_down('W')) {
+          camera_rotation[0] -= 5.0f;
+          if (camera_rotation[0] < -90.0f) camera_rotation[0] = -90.0f;
+        } else if (is_key_down('S')) {
+          camera_rotation[0] += 5.0f;
+          if (camera_rotation[0] > 90.0f) camera_rotation[0] = 90.0f;
+        }
+      }
+    }
+
     void setCamera() 
     {
       scene_node *camTransform = app_scene->get_camera_instance(0)->get_node();
@@ -124,6 +190,35 @@ namespace octet {
       camTransform->rotate(camera_rotation[1], vec3(0.0f, 1.0f, 0.0f));
       camTransform->rotate(-camera_rotation[0], vec3(1.0f, 0.0f, 0.0f));
       camTransform->translate(vec3(0.0f, 0.0f, camera_position.z()));
+    }
+
+    void buildRay(vec3 &rayOrigin, vec3 &rayDirection) {
+      int vx = 0, vy = 0;
+      get_viewport_size(vx, vy);
+
+      //ray r = app_scene->get_camera_instance(0)->get_ray(mouse_x, mouse_y);
+      //nodeSelector.detectClick(r, cubeSelected);
+      float near_plane = app_scene->get_camera_instance(0)->get_near_plane();
+
+      rayOrigin = vec3(0.0f, 0.0f, 0.0f);
+      //printf("Mouse (%d, %d), Viewport (%d, %d), uv (%g, %g).\n", mouse_x, mouse_y, vx, vy, (((float)mouse_x/vx)-0.5f)/20.0f, ((1.0f-(float)mouse_y/vy)-0.5f)/20.0f);
+      rayDirection = vec3(((1.0f-(float)mouse_x/vx)-0.5f)/20.0f, (((float)mouse_y/vy)-0.5f)/20.0f, near_plane);
+      rayDirection = rayDirection.normalize();
+
+      mat4t directionMatrix(1.0f);
+      directionMatrix.translate(camera_position.x(), camera_position.w(), camera_position.y());
+      directionMatrix.rotate(camera_rotation[1], 0.0f, 1.0f, 0.0f);
+      directionMatrix.rotate(-camera_rotation[0], 1.0f, 0.0f, 0.0f);
+      directionMatrix.translate(0.0f, 0.0f, camera_position.z());
+
+      rayOrigin = rayOrigin * directionMatrix;
+
+      directionMatrix.loadIdentity();
+      directionMatrix.rotate(camera_rotation[1], 0.0f, 1.0f, 0.0f);
+      directionMatrix.rotate(-camera_rotation[0], 1.0f, 0.0f, 0.0f);
+
+      rayDirection = rayDirection * directionMatrix;
+
     }
   };
 }
