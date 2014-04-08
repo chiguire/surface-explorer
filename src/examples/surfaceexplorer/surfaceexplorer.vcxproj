@@ -84,6 +84,7 @@
   <ItemGroup>
     <ClInclude Include="nodeselector.h" />
     <ClInclude Include="surfaceexplorer.h" />
+    <ClInclude Include="surfaces.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

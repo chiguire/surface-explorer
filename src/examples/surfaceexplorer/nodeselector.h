@@ -15,7 +15,8 @@ namespace octet {
     dynarray <ref<mesh_instance>> meshInstances;
     dynarray <ref<material>> red;
     dynarray <ref<material>> green;
-    
+    dynarray <vec3> meshPositions;
+
     mesh_instance *meshSelected;
     ivec3 meshSelectedIndex;
     float meshSelectedHeight;
@@ -30,12 +31,13 @@ namespace octet {
     
 
     node_selector()
-    : red()
-    , green()
-    , pointMesh(NULL)
+    : pointMesh(NULL)
     , isLeftButtonPrevClicked(false)
     , cubeNodes()
     , meshInstances()
+    , red()
+    , green()
+    , meshPositions()
     , meshSelected(NULL)
     , meshSelectedIndex(0)
     , meshSelectedHeight(0.0f)
@@ -65,12 +67,14 @@ namespace octet {
 
       for (int j = 0; j != height; j++) {
         for (int i = 0 ; i != width; i++) {
+          vec3 pos(i*widthSize-halfSelectorWidth, 0, j*lengthSize-halfSelectorLength);
           cubeNodes[j*width+i] = new scene_node();
           scene_node &cn = *(cubeNodes[j*width+i]);
-          cn.translate(vec3(i*widthSize-halfSelectorWidth, 0, j*lengthSize-halfSelectorLength));
+          cn.translate(pos);
           
           red.push_back(new material(vec4(1.0f, 0.4f, 0, 1)));
           green.push_back(new material(vec4(0.4f, 1.0f, 0, 1)));
+          meshPositions.push_back(pos);
 
           meshInstances[j*width+i] = new mesh_instance(cubeNodes[j*width+i], pointMesh, red[red.size()-1]);
         }
@@ -140,6 +144,8 @@ namespace octet {
           mat4t nodeToParentDiff = nodeToParentStart;
           nodeToParentDiff.translate(0.0f, mouse_y_diff, 0.0f);
           meshSelected->get_node()->access_nodeToParent() = nodeToParentDiff;
+
+          meshPositions[meshSelectedIndex[1]*width+meshSelectedIndex[0]] = (vec4(0.0f, 0.0f, 0.0f, 1.0f) * nodeToParentDiff).xyz();
           //printf("Drag distance: %g\n", mouse_y_diff);
         }
       } else if (!leftButtonClicked) {
@@ -164,5 +170,9 @@ namespace octet {
       //printf("node in (%g, %g, %g), a=%g, b=%g, c=%g, (b*b-4*a*c)=%g >= 0\n", p[0], p[1], p[2], a, b, c, (b*b - 4*a*c));
       return (b*b - 4*a*c) > 0;
     }
+
+    unsigned int get_width() { return width; }
+    unsigned int get_height() { return height; }
+    dynarray<vec3> *get_positions() { return &meshPositions; }
   };
 }

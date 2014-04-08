@@ -19,6 +19,11 @@ namespace octet {
 
     node_selector nodeSelector;
 
+    dynarray<vec3> *surfaceControlPoints;
+
+    linear_surface linearSurface;
+    color_shader cShader;
+
   public:
     /// this is called when we construct the class before everything is initialised.
     surfaceexplorer(int argc, char **argv)
@@ -29,6 +34,9 @@ namespace octet {
     , mouse_x(0), mouse_y(0)
     , prev_x(0), prev_y(0)
     , nodeSelector()
+    , surfaceControlPoints(NULL)
+    , linearSurface()
+    , cShader()
     { }
 
     /// this is called once OpenGL is initialized
@@ -38,6 +46,11 @@ namespace octet {
 
       nodeSelector.init(4, 4, 2.0f, 2.0f);
       app_scene->add_child(&nodeSelector);
+
+      surfaceControlPoints = nodeSelector.get_positions();
+
+      linearSurface.init(surfaceControlPoints, nodeSelector.get_width(), nodeSelector.get_height(), 16, 16);
+      cShader.init();
 
       dynarray<ref<mesh_instance>> *nodeMeshInstances = nodeSelector.getMeshInstances();
 
@@ -56,12 +69,15 @@ namespace octet {
       keyboardInput();
       mouseMovement();
 
+      linearSurface.update();
+
       // update matrices. assume 30 fps.
       app_scene->update(1.0f/30);
 
       // draw the scene
       app_scene->render((float)vx / vy);
 
+      renderLinearSurface();
     }
 
     void mouseMovement()
@@ -219,6 +235,26 @@ namespace octet {
 
       rayDirection = rayDirection * directionMatrix;
 
+    }
+
+    void renderLinearSurface() {
+      dynarray <float> vertices;
+
+      glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+      glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+      glPointSize(5.0f);
+
+      cShader.render(app_scene->get_camera_instance(0)->get_worldToProjection(), vec4(0.0f, 0.0f, 1.0f, 1.0f));
+
+      linearSurface.get_points(vertices);
+
+      glDisable(GL_DEPTH_TEST);
+      glEnableVertexAttribArray(attribute_pos);
+      glVertexAttribPointer(attribute_pos, 3, GL_FLOAT, GL_FALSE, 0, &vertices[0]);
+      glDrawArrays(GL_POINTS, 0, vertices.size()/3);
+      glDisableVertexAttribArray(attribute_pos);
+      glEnable(GL_DEPTH_TEST);
     }
   };
 }
