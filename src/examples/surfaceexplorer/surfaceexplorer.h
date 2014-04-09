@@ -158,7 +158,7 @@ namespace octet {
       }
 
       if(is_key_down('G')){
-        nodeSelector.resetAllPositions();
+        linearSurface.resetAllPoints();
       }
 
       if (!is_key_down(key_alt)) {

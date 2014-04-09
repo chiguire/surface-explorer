@@ -125,6 +125,13 @@ namespace octet {
 
     unsigned int get_width() { return surfacePointsW; }
     unsigned int get_height() { return surfacePointsH; }
+
+
+    void resetAllPoints(){
+      for(int i=0;i!=controlPoints->size();++i){
+        (*controlPoints)[i][1]=0.0f;
+      }
+    }
   };
 
 }

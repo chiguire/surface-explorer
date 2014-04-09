@@ -175,10 +175,5 @@ namespace octet {
     unsigned int get_height() { return height; }
     dynarray<vec3> *get_positions() { return &meshPositions; }
 
-    void resetAllPositions(){
-    /*  for (int i = 0; i != meshPositions.size(); i++) {
-          meshPositions[i][1] = 0.0f;
-      } */ 
-    }
   };
 }
