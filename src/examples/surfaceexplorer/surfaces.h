@@ -50,16 +50,19 @@ namespace octet {
     }
 
     void update() {
-      for (int j = 0; j != surfacePointsH; j++) {
-        for (int i = 0; i != surfacePointsW; i++) {
-          surfacePoints[j*surfacePointsW+i][1] = evaluate(surfacePoints[j*surfacePointsW+i]);
+
+      float tValue = 1/15.0f;
+
+      for (int i = 0; i != surfacePointsH; i++) {
+        for (int j = 0; j != surfacePointsW; j++) {
+          surfacePoints[i*surfacePointsH+j][1] = evaluate(surfacePoints[i*surfacePointsH+j],i*tValue,j*tValue);
         }
       }
     }
 
-    float evaluate(vec3 &p) {
+    float evaluate(vec3 &p, float u, float v) {
       //find control point neighbors of p and do bilinear interpolation
-      vec3 initPoint = (*controlPoints)[0];
+      /*vec3 initPoint = (*controlPoints)[0];
 
       float x = p.x();
       float z = p.z();
@@ -68,7 +71,7 @@ namespace octet {
       int stepZ = min((int)((z-initPoint.z())/controlPointsStepZ), (int)(controlPointsH-2));
 
       vec3 controlPointNeighbors[4] = { (*controlPoints)[stepZ*controlPointsW+stepX], (*controlPoints)[stepZ*controlPointsW+stepX+1],
-                                        (*controlPoints)[(stepZ+1)*controlPointsW+stepX], (*controlPoints)[(stepZ+1)*controlPointsW+stepX+1] };
+      (*controlPoints)[(stepZ+1)*controlPointsW+stepX], (*controlPoints)[(stepZ+1)*controlPointsW+stepX+1] };
 
       float u = x-controlPointNeighbors[0].x();
       float v = z-controlPointNeighbors[0].z();
@@ -76,7 +79,34 @@ namespace octet {
       vec3 p0(controlPointNeighbors[0]+(controlPointNeighbors[1]-controlPointNeighbors[0])*u);
       vec3 p1(controlPointNeighbors[2]+(controlPointNeighbors[3]-controlPointNeighbors[2])*u);
       vec3 p2(p0+(p1-p0)*v);
-      return p2.y();
+      return p2.y();*/
+
+      float sum = 0.0f;
+
+      for(int i=0; i!=4; ++i){
+        for(int j=0; j!=4; ++j){
+
+          vec3 controlPoint = (*controlPoints)[i*4+j];
+
+          sum+= controlPoint.y()*bernsteinPolynomial(i,u)*bernsteinPolynomial(j,v);
+
+        }
+      }
+
+      return sum;
+
+    }
+
+    float bernsteinPolynomial(int grade, float t){
+      if(grade == 0){
+        return ((1-t)*(1-t)*(1-t));
+      }else if(grade == 1){
+        return (3*t*(1-t)*(1-t));
+      }else if(grade == 2){
+        return (3*t*t*(1-t));
+      }else if(grade == 3){
+        return (t*t*t);
+      }
     }
 
     void get_points(dynarray<float> &result) {

@@ -57,6 +57,7 @@ namespace octet {
       for (auto i = nodeMeshInstances->begin(); i != nodeMeshInstances->end(); i++) {
         app_scene->add_mesh_instance(*i);
       }
+
     }
 
     /// this is called to draw the world
@@ -143,7 +144,7 @@ namespace octet {
       vec4 direction(0.0f);
       
       if(is_key_down(key_space)){
-        this->camera_position = vec4(0.0f, 0.0f, 10.0f, 0.0f);
+        this->camera_position = vec4(-1.0f, 0.0f, 10.0f, 0.0f);
         this->camera_rotation = vec3(45.0f, 0.0f, 0.0f);
       }
 
