@@ -9,9 +9,11 @@
 
 #include "../../octet.h"
 
+#include "surface_explorer_shader.h"
 #include "nodeselector.h"
 #include "surfaces.h"
 #include "surfaceexplorer.h"
+
 
 /// Create a box with octet
 int main(int argc, char **argv) {

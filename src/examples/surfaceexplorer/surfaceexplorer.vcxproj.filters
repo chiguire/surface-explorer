@@ -29,5 +29,8 @@
     <ClInclude Include="surfaces.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="surface_explorer_shader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

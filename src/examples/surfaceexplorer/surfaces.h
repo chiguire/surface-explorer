@@ -119,6 +119,10 @@ namespace octet {
       }
     }
 
+    vec3 getPointAt(int i, int j){
+      return surfacePoints[i*surfacePointsH+j];
+    }
+
     unsigned int get_width() { return surfacePointsW; }
     unsigned int get_height() { return surfacePointsH; }
   };

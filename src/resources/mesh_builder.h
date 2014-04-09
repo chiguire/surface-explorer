@@ -179,6 +179,20 @@ namespace octet { namespace resources {
       }
     }
 
+    void add_plane(vec4* p1, vec4* p2, vec4* p3, vec4* p4){
+      unsigned short cur_vertex = (unsigned short)vertices.size();
+      add_vertex(*p1, vec4(0, 0, 1, 0), 0, 0);
+      add_vertex(*p2, vec4(0, 0, 1, 0), 0, 1);
+      add_vertex(*p3, vec4(0, 0, 1, 0), 1, 1);
+      add_vertex(*p4, vec4(0, 0, 1, 0), 1, 0);
+      indices.push_back(cur_vertex+0);
+      indices.push_back(cur_vertex+1);
+      indices.push_back(cur_vertex+2);
+      indices.push_back(cur_vertex+0);
+      indices.push_back(cur_vertex+2);
+      indices.push_back(cur_vertex+3);
+    }
+
     // add a sphere to the model at the current matrix location
     // as in glutSolidSphere.
     // This is not a very nice sphere so later I must add a geosphere.

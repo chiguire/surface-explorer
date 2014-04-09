@@ -4,6 +4,9 @@
 //
 // Modular Framework for OpenGLES2 rendering on multiple platforms.
 //
+
+#include <vector>
+
 namespace octet {
   /// Scene containing a box with octet.
   class surfaceexplorer : public app {
@@ -23,6 +26,11 @@ namespace octet {
 
     linear_surface linearSurface;
     color_shader cShader;
+    surface_explorer_shader seShader;
+
+
+    std::vector<mesh*> surfaceMesh;
+
 
   public:
     /// this is called when we construct the class before everything is initialised.
@@ -51,6 +59,7 @@ namespace octet {
 
       linearSurface.init(surfaceControlPoints, nodeSelector.get_width(), nodeSelector.get_height(), 16, 16);
       cShader.init();
+      seShader.init();
 
       dynarray<ref<mesh_instance>> *nodeMeshInstances = nodeSelector.getMeshInstances();
 
@@ -78,7 +87,7 @@ namespace octet {
       // draw the scene
       app_scene->render((float)vx / vy);
 
-      renderLinearSurface();
+      renderLinearSurfaceAsMesh();
     }
 
     void mouseMovement()
@@ -148,6 +157,10 @@ namespace octet {
         this->camera_rotation = vec3(45.0f, 0.0f, 0.0f);
       }
 
+      if(is_key_down('G')){
+        nodeSelector.resetAllPositions();
+      }
+
       if (!is_key_down(key_alt)) {
         if (is_key_down('W')) {
           direction[1] = -0.25f * (camera_position[2]/5.0f);
@@ -196,6 +209,7 @@ namespace octet {
           camera_rotation[0] += 5.0f;
           if (camera_rotation[0] > 90.0f) camera_rotation[0] = 90.0f;
         }
+        
       }
     }
 
@@ -238,7 +252,35 @@ namespace octet {
 
     }
 
-    void renderLinearSurface() {
+    void renderLinearSurfaceAsMesh(){
+
+      surfaceMesh.clear();
+
+      for(int i=0;i!=15;++i){
+        for(int j=0;j!=15;++j){
+
+        vec4 p1(linearSurface.getPointAt(i,j).x(),linearSurface.getPointAt(i,j).y(),linearSurface.getPointAt(i,j).z(),0.0f);
+        vec4 p2(linearSurface.getPointAt(i+1,j).x(),linearSurface.getPointAt(i+1,j).y(),linearSurface.getPointAt(i+1,j).z(),0.0f);
+        vec4 p3(linearSurface.getPointAt(i+1,j+1).x(),linearSurface.getPointAt(i+1,j+1).y(),linearSurface.getPointAt(i+1,j+1).z(),0.0f);
+        vec4 p4(linearSurface.getPointAt(i,j+1).x(),linearSurface.getPointAt(i,j+1).y(),linearSurface.getPointAt(i,j+1).z(),0.0f);
+
+        mesh* m = new mesh();
+        m->make_plane(&p1,&p2,&p3,&p4);
+        surfaceMesh.push_back(m);
+
+        }
+      }
+
+     
+      cShader.render(app_scene->get_camera_instance(0)->get_worldToProjection(), vec4(0.0f, 0.0f, 1.0f, 0.3f));
+
+      for(int i=0;i!=surfaceMesh.size();++i){
+        surfaceMesh[i]->render();
+      }
+
+    }
+
+    void renderLinearSurfaceAsPoints() {
       dynarray <float> vertices;
 
       glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);

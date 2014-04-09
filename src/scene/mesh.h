@@ -492,6 +492,14 @@ namespace octet { namespace scene {
       b.get_mesh(*this);
     }
 
+    void make_plane(vec4* p1, vec4* p2, vec4* p3, vec4* p4){
+      init();
+      mesh_builder b;
+      b.init();
+      b.add_plane(p1,p2,p3,p4);
+      b.get_mesh(*this);
+    }
+
     /// Use the mesh builder to make a sphere (Deprecated)
     void make_sphere(float radius=1.0f, unsigned slices=16, unsigned stacks=16) {
       init();

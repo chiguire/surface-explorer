@@ -63,7 +63,7 @@ namespace octet {
       cubeNodes.resize(width*height);
       meshInstances.resize(width*height);
 
-      pointMesh = new mesh_sphere(vec3(0,0,0), 0.25f, 1);
+      pointMesh = new mesh_sphere(vec3(0,0,0), 0.15f, 1);
 
       for (int j = 0; j != height; j++) {
         for (int i = 0 ; i != width; i++) {
@@ -174,5 +174,11 @@ namespace octet {
     unsigned int get_width() { return width; }
     unsigned int get_height() { return height; }
     dynarray<vec3> *get_positions() { return &meshPositions; }
+
+    void resetAllPositions(){
+    /*  for (int i = 0; i != meshPositions.size(); i++) {
+          meshPositions[i][1] = 0.0f;
+      } */ 
+    }
   };
 }
