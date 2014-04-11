@@ -171,6 +171,7 @@ namespace octet {
 
       if(is_key_down('G')){
         linearSurface.resetAllPoints();
+        nodeSelector.resetAllPoints();
       }
 
       if (!is_key_down(key_alt)) {

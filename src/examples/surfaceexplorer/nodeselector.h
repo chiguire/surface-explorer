@@ -26,6 +26,12 @@ namespace octet {
     unsigned int width;
     unsigned int height;
 
+    float halfWidth;
+    float halfHeight;
+
+    float widthSize;
+    float heightSize;
+
     NodeSelectorState state;
   public:
     
@@ -45,6 +51,10 @@ namespace octet {
     , nodeToParentStart(1.0f)
     , width(0)
     , height(0)
+    , halfWidth(0.0f)
+    , halfHeight(0.0f)
+    , widthSize(0.0f)
+    , heightSize(0.0f)
     , state(Idle)
     {
     }
@@ -55,8 +65,11 @@ namespace octet {
 
     void init(int width_, int height_, float widthSize, float lengthSize) {
       
-      float halfSelectorWidth = width_*widthSize/2.0f;
-      float halfSelectorLength = height_*lengthSize/2.0f;
+      halfWidth = width_*widthSize/2.0f;
+      halfHeight = height_*lengthSize/2.0f;
+
+      this->widthSize = widthSize;
+      this->heightSize = lengthSize;
 
       width = width_;
       height = height_;
@@ -67,7 +80,7 @@ namespace octet {
 
       for (int j = 0; j != height; j++) {
         for (int i = 0 ; i != width; i++) {
-          vec3 pos(i*widthSize-halfSelectorWidth, 0, j*lengthSize-halfSelectorLength);
+          vec3 pos(i*widthSize-halfWidth, 0, j*lengthSize-halfHeight);
           cubeNodes[j*width+i] = new scene_node();
           scene_node &cn = *(cubeNodes[j*width+i]);
           cn.translate(pos);
@@ -171,6 +184,19 @@ namespace octet {
       return (b*b - 4*a*c) > 0;
     }
 
+    void resetAllPoints() {
+      for (int j = 0; j != height; j++) {
+        for (int i = 0 ; i != width; i++) {
+          mat4t nTP = meshInstances[j*width+i]->get_node()->access_nodeToParent();
+          nTP.loadIdentity();
+          nTP.translate(i*widthSize-halfWidth, 0, j*heightSize-halfHeight);
+          meshInstances[j*width+i]->get_node()->access_nodeToParent() = nTP;
+
+          meshPositions[j*width+i] = (vec4(0.0f, 0.0f, 0.0f, 1.0f) * nTP).xyz();
+        }
+      }
+    }
+    
     unsigned int get_width() { return width; }
     unsigned int get_height() { return height; }
     dynarray<vec3> *get_positions() { return &meshPositions; }
