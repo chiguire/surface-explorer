@@ -28,6 +28,7 @@ namespace octet {
     color_shader cShader;
     surface_explorer_shader seShader;
 
+    bool renderPoints;
 
     std::vector<mesh*> surfaceMesh;
 
@@ -45,6 +46,7 @@ namespace octet {
     , surfaceControlPoints(NULL)
     , linearSurface()
     , cShader()
+    ,renderPoints(true)
     { }
 
     /// this is called once OpenGL is initialized
@@ -84,8 +86,10 @@ namespace octet {
       // update matrices. assume 30 fps.
       app_scene->update(1.0f/30);
 
-      // draw the scene
-      app_scene->render((float)vx / vy);
+      if(renderPoints){
+        // draw the scene
+        app_scene->render((float)vx / vy);
+      }
 
       renderLinearSurfaceAsMesh();
     }
@@ -155,6 +159,14 @@ namespace octet {
       if(is_key_down(key_space)){
         this->camera_position = vec4(-1.0f, 0.0f, 10.0f, 0.0f);
         this->camera_rotation = vec3(45.0f, 0.0f, 0.0f);
+      }
+
+      if(is_key_down('P')){
+        if(renderPoints){
+          renderPoints=false;
+        }else{
+          renderPoints=true;
+        }
       }
 
       if(is_key_down('G')){
@@ -272,9 +284,13 @@ namespace octet {
       }
 
      
-      cShader.render(app_scene->get_camera_instance(0)->get_worldToProjection(), vec4(0.0f, 0.0f, 1.0f, 0.3f));
 
       for(int i=0;i!=surfaceMesh.size();++i){
+        if(i%2==0){
+           cShader.render(app_scene->get_camera_instance(0)->get_worldToProjection(), vec4(0.0f, 0.5f, 1.0f, 0.6f));
+        }else{
+           cShader.render(app_scene->get_camera_instance(0)->get_worldToProjection(), vec4(1.0f, 1.0f, 1.0f, 0.6f));
+        }
         surfaceMesh[i]->render();
       }
 
